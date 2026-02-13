@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+.env.production
+uploads/*.jpg
+uploads/*.png
+uploads/*.pdf
+uploads/*.zip
+uploads/*.mp4
+uploads/*.mov
+uploads/*.jpeg
+server_log.txt
+build_log.txt
+*.log
+.DS_Store
