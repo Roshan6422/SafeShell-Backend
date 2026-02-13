@@ -1,0 +1,292 @@
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { DollarSign, TrendingUp, CreditCard, Calendar, ArrowUpRight, ArrowDownRight, Download, Wallet, Activity, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import { getBaseUrl } from '../utils/api';
+
+export default function PaymentsPage() {
+    const [payments, setPayments] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPayments = async () => {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const res = await axios.get(`${getBaseUrl()}/api/payment/all`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setPayments(res.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPayments();
+    }, []);
+
+    // Mock data for charts (replace with real aggregation if available)
+    const chartData = [
+        { name: 'Mon', amount: 4000 },
+        { name: 'Tue', amount: 3000 },
+        { name: 'Wed', amount: 2000 },
+        { name: 'Thu', amount: 2780 },
+        { name: 'Fri', amount: 1890 },
+        { name: 'Sat', amount: 2390 },
+        { name: 'Sun', amount: 3490 },
+    ];
+
+    return (
+        <div className="space-y-8 max-w-[1600px] mx-auto pt-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-3xl font-bold text-white tracking-tight">Payments & Transactions</h2>
+                    <p className="text-slate-400 mt-1">Monitor revenue streams and financial data</p>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all">
+                    <Download size={18} />
+                    <span className="font-medium">Export Report</span>
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-500" />
+                    <div className="relative z-10 flex justify-between items-start">
+                        <div>
+                            <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Total Revenue</p>
+                            <h3 className="text-3xl font-bold text-white mt-1">
+                                ${payments.reduce((acc, curr) => acc + curr.amount, 0).toFixed(2)}
+                            </h3>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 ring-1 ring-emerald-500/20">
+                            <DollarSign size={24} />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-4">
+                        <span className="flex items-center text-emerald-400 text-sm font-bold bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
+                            <ArrowUpRight size={14} className="mr-1" />
+                            +12.5%
+                        </span>
+                        <span className="text-slate-500 text-xs">vs last month</span>
+                    </div>
+                </div>
+
+                <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-500" />
+                    <div className="relative z-10 flex justify-between items-start">
+                        <div>
+                            <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Transactions</p>
+                            <h3 className="text-3xl font-bold text-white mt-1">{payments.length}</h3>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 ring-1 ring-blue-500/20">
+                            <Activity size={24} />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-4">
+                        <span className="flex items-center text-blue-400 text-sm font-bold bg-blue-500/10 px-2 py-1 rounded-lg border border-blue-500/20">
+                            <TrendingUp size={14} className="mr-1" />
+                            +8.2%
+                        </span>
+                        <span className="text-slate-500 text-xs">vs last month</span>
+                    </div>
+                </div>
+
+                <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-500" />
+                    <div className="relative z-10 flex justify-between items-start">
+                        <div>
+                            <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Avg. Order Value</p>
+                            <h3 className="text-3xl font-bold text-white mt-1">
+                                ${payments.length > 0 ? (payments.reduce((acc, curr) => acc + curr.amount, 0) / payments.length).toFixed(2) : '0.00'}
+                            </h3>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 ring-1 ring-purple-500/20">
+                            <Wallet size={24} />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-4">
+                        <span className="flex items-center text-rose-400 text-sm font-bold bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20">
+                            <ArrowDownRight size={14} className="mr-1" />
+                            -2.4%
+                        </span>
+                        <span className="text-slate-500 text-xs">vs last month</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Charts Area */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 glass-panel p-6 rounded-2xl">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-white">Revenue Overview</h3>
+                        <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                            <span className="text-xs text-slate-400">Income</span>
+                        </div>
+                    </div>
+                    <div className="h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData} barSize={40}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                                <XAxis
+                                    dataKey="name"
+                                    stroke="#94a3b8"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    dy={10}
+                                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                                />
+                                <YAxis
+                                    stroke="#94a3b8"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tickFormatter={(value) => `$${value}`}
+                                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                                />
+                                <Tooltip
+                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                    contentStyle={{
+                                        backgroundColor: '#1e293b',
+                                        borderColor: '#334155',
+                                        borderRadius: '12px',
+                                        color: '#f8fafc',
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)'
+                                    }}
+                                    itemStyle={{ color: '#f8fafc' }}
+                                />
+                                <Bar dataKey="amount" radius={[8, 8, 8, 8]}>
+                                    {chartData.map((entry, index) => (
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill="#3b82f6"
+                                            fillOpacity={0.8}
+                                            className="hover:fill-opacity-100 transition-all cursor-pointer"
+                                        />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="glass-panel p-6 rounded-2xl">
+                    <h3 className="text-lg font-bold text-white mb-6">Payment Methods</h3>
+                    <div className="space-y-4">
+                        <div className="bg-white/5 p-4 rounded-xl flex items-center justify-between border border-white/5 hover:bg-white/10 transition-colors group cursor-pointer">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-sm">
+                                    <CreditCard size={24} />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-white group-hover:text-blue-400 transition-colors">Credit Card</p>
+                                    <p className="text-xs text-slate-400">Visa, Mastercard</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="block font-bold text-white text-lg">65%</span>
+                                <span className="text-xs text-emerald-400">+2.4%</span>
+                            </div>
+                        </div>
+                        <div className="bg-white/5 p-4 rounded-xl flex items-center justify-between border border-white/5 hover:bg-white/10 transition-colors group cursor-pointer">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-sm">
+                                    <DollarSign size={24} />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-white group-hover:text-purple-400 transition-colors">Crypto</p>
+                                    <p className="text-xs text-slate-400">USDT, BTC</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="block font-bold text-white text-lg">35%</span>
+                                <span className="text-xs text-rose-400">-1.2%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                        <h4 className="text-sm font-bold text-blue-400 mb-1">Pro Tip</h4>
+                        <p className="text-xs text-blue-200/70">Crypto payments have lower fees. Consider promoting them to increase margins.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="glass-panel rounded-xl overflow-hidden">
+                <div className="p-6 border-b border-white/5 flex justify-between items-center">
+                    <h3 className="font-bold text-white">Recent Transactions</h3>
+                    <button className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">View All</button>
+                </div>
+                <table className="w-full text-left">
+                    <thead>
+                        <tr className="bg-white/5">
+                            <th className="p-5 font-semibold text-slate-400 text-xs uppercase tracking-wider">User</th>
+                            <th className="p-5 font-semibold text-slate-400 text-xs uppercase tracking-wider">Plan</th>
+                            <th className="p-5 font-semibold text-slate-400 text-xs uppercase tracking-wider">Amount</th>
+                            <th className="p-5 font-semibold text-slate-400 text-xs uppercase tracking-wider">Status</th>
+                            <th className="p-5 font-semibold text-slate-400 text-xs uppercase tracking-wider">Transaction ID</th>
+                            <th className="p-5 font-semibold text-slate-400 text-xs uppercase tracking-wider">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                        {loading ? (
+                            <tr>
+                                <td colSpan={6} className="p-12 text-center text-slate-500 animate-pulse">
+                                    <div className="flex flex-col items-center justify-center gap-2">
+                                        <div className="w-8 h-8 border-2 border-white/10 border-t-emerald-500 rounded-full animate-spin"></div>
+                                        <span>Loading payments...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : payments.length === 0 ? (
+                            <tr><td colSpan={6} className="p-8 text-center text-slate-500">No payments found</td></tr>
+                        ) : (
+                            payments.map((payment, index) => (
+                                <motion.tr
+                                    key={payment._id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    className="hover:bg-white/5 transition-colors group"
+                                >
+                                    <td className="p-5">
+                                        <div className="font-medium text-white">{payment.user?.name || 'Unknown'}</div>
+                                        <div className="text-xs text-slate-400">{payment.user?.email}</div>
+                                    </td>
+                                    <td className="p-5 text-sm text-slate-300">
+                                        {payment.plan || 'Pro Monthly'}
+                                    </td>
+                                    <td className="p-5 font-mono font-bold text-emerald-400">${payment.amount.toFixed(2)}</td>
+                                    <td className="p-5">
+                                        <div className="flex items-center gap-2">
+                                            {payment.status === 'completed' && <CheckCircle2 size={14} className="text-emerald-400" />}
+                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold capitalize border ${payment.status === 'completed'
+                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                                                }`}>
+                                                {payment.status}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="p-5">
+                                        <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded select-all">
+                                            {payment.transactionId || 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="p-5 text-slate-400 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar size={14} />
+                                            {new Date(payment.date).toLocaleDateString()}
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
