@@ -14,7 +14,11 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123') as any;
 
-            req.user = await User.findById(decoded.id).select('-password');
+            const user = await User.findById(decoded.id);
+            if (user) {
+                delete user.password; // Manually remove password
+                req.user = user;
+            }
 
             if (!req.user) {
                 res.status(401).json({ message: 'Not authorized, user not found' });

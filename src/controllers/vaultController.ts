@@ -36,7 +36,7 @@ export const getItems = async (req: AuthRequest, res: Response) => {
             filter.type = type;
         }
 
-        const items = await VaultItem.find(filter).sort({ createdAt: -1 });
+        const items = await VaultItem.find(filter, { createdAt: -1 });
         res.status(200).json(items);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
@@ -96,7 +96,7 @@ export const uploadItem = async (req: AuthRequest, res: Response) => {
 
 export const updateItem = async (req: AuthRequest, res: Response) => {
     try {
-        const item = await VaultItem.findById(req.params.id);
+        const item = await VaultItem.findById(req.params.id as string);
 
         if (!item) {
             res.status(404).json({ message: 'Item not found' });
@@ -124,7 +124,7 @@ export const updateItem = async (req: AuthRequest, res: Response) => {
 
 export const deleteItem = async (req: AuthRequest, res: Response) => {
     try {
-        const item = await VaultItem.findById(req.params.id);
+        const item = await VaultItem.findById(req.params.id as string);
 
         if (!item) {
             res.status(404).json({ message: 'Item not found' });
@@ -162,7 +162,7 @@ export const deleteItem = async (req: AuthRequest, res: Response) => {
 
 export const restoreItem = async (req: AuthRequest, res: Response) => {
     try {
-        const item = await VaultItem.findById(req.params.id);
+        const item = await VaultItem.findById(req.params.id as string);
         if (!item || item.user.toString() !== req.user.id) {
             return res.status(404).json({ message: 'Item not found' });
         }

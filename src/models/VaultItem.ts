@@ -1,27 +1,32 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { FirestoreModel } from './firebase/FirestoreModel';
 
-export interface IVaultItem extends Document {
-    user: mongoose.Schema.Types.ObjectId;
+export interface IVaultItem {
+    user: string; // Storing userId as string
     name: string;
     type: 'photo' | 'video' | 'document' | 'zip' | 'note';
     size: string;
     url?: string;
-    content?: string; // For notes or passwords
+    content?: string;
     isDeleted: boolean;
     deletedAt?: Date;
     createdAt: Date;
 }
 
-const VaultItemSchema: Schema = new Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    name: { type: String, required: true },
-    type: { type: String, enum: ['photo', 'video', 'document', 'zip', 'note'], required: true },
-    size: { type: String, required: true },
-    url: { type: String },
-    content: { type: String },
-    isDeleted: { type: Boolean, default: false },
-    deletedAt: { type: Date },
-    createdAt: { type: Date, default: Date.now },
-});
+export class VaultItem extends FirestoreModel {
+    static collectionName = 'vaultItems';
 
-export default mongoose.model<IVaultItem>('VaultItem', VaultItemSchema);
+    public user!: string;
+    public name!: string;
+    public type!: string;
+    public size!: string;
+    public url?: string;
+    public content?: string;
+    public isDeleted!: boolean;
+    public deletedAt?: Date;
+
+    constructor(data: any) {
+        super(data);
+    }
+}
+
+export default VaultItem;

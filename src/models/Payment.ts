@@ -1,7 +1,7 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { FirestoreModel } from './firebase/FirestoreModel';
 
-export interface IPayment extends Document {
-    user: mongoose.Types.ObjectId;
+export interface IPayment {
+    user: string;
     amount: number;
     currency: string;
     status: string;
@@ -12,17 +12,22 @@ export interface IPayment extends Document {
     orderId?: string;
 }
 
-const PaymentSchema: Schema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    amount: { type: Number, required: true },
-    currency: { type: String, default: 'LKR' },
-    status: { type: String, default: 'pending' },
-    date: { type: Date, default: Date.now },
-    transactionId: { type: String },
-    paymentMethod: { type: String },
-    plan: { type: String },
-    orderId: { type: String, unique: true, sparse: true }
-});
+export class Payment extends FirestoreModel {
+    static collectionName = 'payments';
 
-export default mongoose.model<IPayment>('Payment', PaymentSchema);
+    public user!: string;
+    public amount!: number;
+    public currency!: string;
+    public status!: string;
+    public date!: Date;
+    public transactionId?: string;
+    public paymentMethod?: string;
+    public plan?: string;
+    public orderId?: string;
 
+    constructor(data: any) {
+        super(data);
+    }
+}
+
+export default Payment;

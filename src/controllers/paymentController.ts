@@ -159,7 +159,7 @@ export const payhereNotify = async (req: Request, res: Response) => {
 // @access  Private
 export const getPaymentHistory = async (req: AuthRequest, res: Response) => {
     try {
-        const payments = await Payment.find({ user: req.user.id }).sort({ date: -1 });
+        const payments = await Payment.find({ user: req.user.id }, { date: -1 });
         res.json(payments);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
@@ -171,11 +171,18 @@ export const getPaymentHistory = async (req: AuthRequest, res: Response) => {
 // @access  Private/Admin
 export const getAllPayments = async (req: AuthRequest, res: Response) => {
     try {
-        const payments = await Payment.find({})
-            .populate('user', 'name email')
-            .sort({ date: -1 });
+        const payments = await Payment.find({}, { date: -1 });
 
-        res.json(payments);
+        // Manual population
+        const populatedPayments = await Promise.all(payments.map(async (p: any) => {
+            const user = await User.findById(p.user);
+            return {
+                ...p,
+                user: user ? { _id: user._id, name: user.name, email: user.email } : null
+            };
+        }));
+
+        res.json(populatedPayments);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error fetching payments' });

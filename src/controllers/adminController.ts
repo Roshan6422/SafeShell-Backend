@@ -6,8 +6,12 @@ import { AuthRequest } from '../middleware/authMiddleware';
 
 export const getAllUsers = async (req: Request, res: Response) => {
     try {
-        const users = await User.find().select('-password');
-        res.json(users);
+        const users = await User.find();
+        const safeUsers = users.map((u: any) => {
+            const { password, ...rest } = u;
+            return rest;
+        });
+        res.json(safeUsers);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -15,8 +19,15 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getAllPayments = async (req: Request, res: Response) => {
     try {
-        const payments = await Payment.find().populate('user', 'name email');
-        res.json(payments);
+        const payments = await Payment.find();
+        const populatedPayments = await Promise.all(payments.map(async (p: any) => {
+            const user = await User.findById(p.user);
+            return {
+                ...p,
+                user: user ? { _id: user._id, name: user.name, email: user.email } : null
+            };
+        }));
+        res.json(populatedPayments);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -24,8 +35,15 @@ export const getAllPayments = async (req: Request, res: Response) => {
 
 export const getAllTickets = async (req: Request, res: Response) => {
     try {
-        const tickets = await SupportTicket.find().populate('user', 'name email').sort({ createdAt: -1 });
-        res.json(tickets);
+        const tickets = await SupportTicket.find({}, { createdAt: -1 });
+        const populatedTickets = await Promise.all(tickets.map(async (t: any) => {
+            const user = await User.findById(t.user);
+            return {
+                ...t,
+                user: user ? { _id: user._id, name: user.name, email: user.email } : null
+            };
+        }));
+        res.json(populatedTickets);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -33,7 +51,7 @@ export const getAllTickets = async (req: Request, res: Response) => {
 
 export const replyToTicket = async (req: AuthRequest, res: Response) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params as { id: string };
         const { message } = req.body;
 
         const ticket = await SupportTicket.findById(id);

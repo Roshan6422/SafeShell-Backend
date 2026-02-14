@@ -1,0 +1,27 @@
+{
+  "inMemoryStore": {
+    "users": {
+      "mem_1": {
+        "name": "Admin",
+        "recoveryKey": "SAFE-QAVE-N4MH",
+        "createdAt": "2026-02-13T15:46:56.658Z",
+        "updatedAt": "2026-02-13T15:47:01.548Z",
+        "role": "admin",
+        "email": "admin@admin.com",
+        "password": "$2b$10$EpOu/y8pE/t.7.8.9.0.1.2.3.4.5.6.7.8.9.0.1.2.3.4.5"
+      },
+      "mem_2": {
+        "name": "Root Admin",
+        "email": "root@admin.com",
+        "password": "$2b$10$QCmco2wsiyN.r5swd0Jzue8DHH1L4vmwfYK4BpTKMLmg10oOL2yjK",
+        "recoveryKey": "SAFE-EEBN-7K7L",
+        "createdAt": "2026-02-13T16:18:16.969Z",
+        "updatedAt": "2026-02-13T16:18:24.124Z",
+        "role": "admin"
+      }
+    },
+    "payments": {},
+    "supportTickets": {}
+  },
+  "idCounter": 3
+}

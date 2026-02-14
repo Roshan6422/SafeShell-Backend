@@ -1,22 +1,20 @@
-import mongoose from 'mongoose';
+import '../config/firebase'; // Initialize Firebase
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import User from '../models/User';
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/safeshell';
-
 const createAdmin = async () => {
     try {
-        await mongoose.connect(MONGO_URI);
-        console.log('MongoDB connected');
+        console.log('Firebase initialized. Creating admin...');
 
         const email = 'admin@safeshell.com';
         const password = 'Admin123!';
         const name = 'System Admin';
 
-        const userExists = await User.findOne({ email });
+        // Assuming User.findOne uses the Firestore implementation now
+        const userExists = await User.findByEmail(email);
 
         if (userExists) {
             console.log('Admin user already exists');
@@ -34,11 +32,12 @@ const createAdmin = async () => {
                 name,
                 email,
                 password: hashedPassword,
-                role: 'admin'
+                role: 'admin',
+                createdAt: new Date()
             });
             console.log('Admin user created successfully');
-            console.log('Email: ' + email);
-            console.log('Password: ' + password);
+            console.log(`Email: ${email}`);
+            console.log(`Password: ${password}`);
         }
 
         process.exit(0);

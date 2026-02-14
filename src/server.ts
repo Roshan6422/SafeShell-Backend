@@ -1,31 +1,18 @@
 import app from './app';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import './config/firebase'; // Initialize Firebase
 
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
-
-import { seedAdmin } from './utils/seed';
 
 const startServer = async () => {
     try {
-        if (MONGO_URI) {
-            await mongoose.connect(MONGO_URI);
-            console.log('Connected to MongoDB (Cloud/External)');
-            await seedAdmin();
-        } else {
-            console.log('No MONGO_URI provided. Attempting to start in-memory server...');
-            const { MongoMemoryServer } = await import('mongodb-memory-server');
-            const mongod = await MongoMemoryServer.create();
-            const uri = mongod.getUri();
-            await mongoose.connect(uri);
-            console.log(`Connected to in-memory MongoDB at ${uri}`);
-            await seedAdmin();
-        }
+        // Firebase is initialized via import
+        console.log('Firebase initialized.');
+
     } catch (err) {
-        console.error('Database connection failed:', err);
+        console.error('Server startup failed:', err);
         process.exit(1);
     }
 
@@ -35,4 +22,3 @@ const startServer = async () => {
 };
 
 startServer();
-

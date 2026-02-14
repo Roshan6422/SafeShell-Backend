@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { FirestoreModel } from './firebase/FirestoreModel';
 
 export interface IReply {
     sender: 'user' | 'admin';
@@ -6,8 +6,8 @@ export interface IReply {
     date: Date;
 }
 
-export interface ISupportTicket extends Document {
-    user: mongoose.Types.ObjectId;
+export interface ISupportTicket {
+    user: string;
     subject: string;
     message: string;
     status: 'open' | 'closed';
@@ -15,17 +15,18 @@ export interface ISupportTicket extends Document {
     createdAt: Date;
 }
 
-const SupportTicketSchema: Schema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    subject: { type: String, required: true },
-    message: { type: String, required: true },
-    status: { type: String, enum: ['open', 'closed'], default: 'open' },
-    replies: [{
-        sender: { type: String, enum: ['user', 'admin'], required: true },
-        message: { type: String, required: true },
-        date: { type: Date, default: Date.now }
-    }],
-    createdAt: { type: Date, default: Date.now }
-});
+export class SupportTicket extends FirestoreModel {
+    static collectionName = 'supportTickets';
 
-export default mongoose.model<ISupportTicket>('SupportTicket', SupportTicketSchema);
+    public user!: string;
+    public subject!: string;
+    public message!: string;
+    public status!: string;
+    public replies!: IReply[];
+
+    constructor(data: any) {
+        super(data);
+    }
+}
+
+export default SupportTicket;
