@@ -87,7 +87,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const getMe = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(req.user._id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -110,7 +110,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
 export const updateCalculatorPassword = async (req: AuthRequest, res: Response) => {
     try {
         const { oldPassword, newPassword } = req.body;
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(req.user._id);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -139,7 +139,7 @@ export const updateCalculatorPassword = async (req: AuthRequest, res: Response) 
 
 export const updateProfile = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(req.user._id);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -171,7 +171,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 
 export const deleteAccount = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(req.user._id);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });

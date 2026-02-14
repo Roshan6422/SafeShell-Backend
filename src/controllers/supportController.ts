@@ -6,7 +6,7 @@ export const createTicket = async (req: AuthRequest, res: Response) => {
     try {
         const { subject, message } = req.body;
         const ticket = await SupportTicket.create({
-            user: req.user.id,
+            user: req.user._id,
             subject,
             message,
             replies: []
@@ -19,7 +19,7 @@ export const createTicket = async (req: AuthRequest, res: Response) => {
 
 export const getMyTickets = async (req: AuthRequest, res: Response) => {
     try {
-        const tickets = await SupportTicket.find({ user: req.user.id }, { createdAt: -1 });
+        const tickets = await SupportTicket.find({ user: req.user._id }, { createdAt: -1 });
         res.json(tickets);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });

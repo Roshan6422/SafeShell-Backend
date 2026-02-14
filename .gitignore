@@ -12,4 +12,7 @@ uploads/*.jpeg
 server_log.txt
 build_log.txt
 *.log
+serviceAccountKey.json
+data/
+temp_db.json
 .DS_Store

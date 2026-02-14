@@ -76,3 +76,35 @@ export const replyToTicket = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+export const deleteUser = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params as { id: string };
+
+        // Prevent admin from deleting themselves
+        if (id === req.user._id.toString()) {
+            return res.status(400).json({ message: 'You cannot delete your own admin account' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // 1. Delete user
+        await user.deleteOne();
+
+        // 2. Cascade delete associated data
+        await Payment.deleteMany({ user: id });
+        await SupportTicket.deleteMany({ user: id });
+
+        // Note: Vault items could also be deleted if desired
+        // import VaultItem from '../models/VaultItem';
+        // await VaultItem.deleteMany({ user: id });
+
+        res.json({ message: 'User and associated data deleted successfully' });
+    } catch (error) {
+        console.error('Delete User Error:', error);
+        res.status(500).json({ message: 'Server error deleting user' });
+    }
+};

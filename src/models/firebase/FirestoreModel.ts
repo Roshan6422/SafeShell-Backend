@@ -14,7 +14,7 @@ export interface IFirestoreDocument {
 let inMemoryStore: { [collection: string]: { [id: string]: any } } = {};
 let idCounter = 1;
 let loadedFromDisk = false;
-const DB_FILE = path.join(process.cwd(), 'temp_db.json');
+const DB_FILE = process.env.DB_PATH || 'd:\\SafeShell\\data\\temp_db.json';
 
 function saveToDisk() {
     try {
@@ -28,13 +28,21 @@ function loadFromDisk() {
     if (loadedFromDisk) return;
     try {
         if (fs.existsSync(DB_FILE)) {
-            const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-            inMemoryStore = data.inMemoryStore || {};
-            idCounter = data.idCounter || 1;
-            console.log('✅ Loaded in-memory DB from disk');
+            const rawData = fs.readFileSync(DB_FILE, 'utf8');
+            if (rawData.trim()) {
+                const data = JSON.parse(rawData);
+                inMemoryStore = data.inMemoryStore || {};
+                idCounter = data.idCounter || 1;
+                console.log('✅ Loaded in-memory DB from disk');
+            } else {
+                console.warn('⚠️ DB file is empty, starting fresh');
+            }
         }
-    } catch (e) {
-        console.error('Failed to load in-memory DB from disk:', e);
+    } catch (e: any) {
+        console.error('❌ Failed to load in-memory DB from disk (Corrupted JSON?):', e.message);
+        // Start fresh to avoid crash loop
+        inMemoryStore = {};
+        idCounter = 1;
     } finally {
         loadedFromDisk = true;
     }

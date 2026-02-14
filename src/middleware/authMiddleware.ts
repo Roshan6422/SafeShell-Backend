@@ -21,14 +21,15 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
             }
 
             if (!req.user) {
+                console.warn(`[Auth] User not found for ID: ${decoded.id}`);
                 res.status(401).json({ message: 'Not authorized, user not found' });
                 return;
             }
 
             next();
             return;
-        } catch (error) {
-            console.error('Auth middleware error:', error);
+        } catch (error: any) {
+            console.error('[Auth] Token verification failed:', error.message);
             res.status(401).json({ message: 'Not authorized, token failed' });
             return;
         }

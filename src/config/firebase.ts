@@ -1,6 +1,7 @@
 import admin from 'firebase-admin';
 import dotenv from 'dotenv';
 import path from 'path';
+import * as fs from 'fs';
 
 dotenv.config();
 
@@ -9,11 +10,15 @@ let firebaseInitialized = false;
 
 try {
     const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(__dirname, '../../serviceAccountKey.json');
-    serviceAccount = require(serviceAccountPath);
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+        const decodedKey = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+        serviceAccount = JSON.parse(decodedKey);
+    } else if (fs.existsSync(serviceAccountPath)) {
+        serviceAccount = require(serviceAccountPath);
+    }
 } catch (error) {
-    console.warn('⚠️  Firebase Service Account Key not found.');
+    console.warn('⚠️  Firebase Service Account Key not found or invalid.');
     console.warn('   The server will start in IN-MEMORY mode (data will not persist).');
-    console.warn('   To use Firebase, place serviceAccountKey.json in the backend root.');
 }
 
 if (serviceAccount && !admin.apps.length) {

@@ -28,7 +28,7 @@ export const getItems = async (req: AuthRequest, res: Response) => {
     try {
         const { type, isDeleted } = req.query;
         const filter: any = {
-            user: req.user.id,
+            user: req.user._id,
             isDeleted: isDeleted === 'true'
         };
 
@@ -48,7 +48,7 @@ export const createItem = async (req: AuthRequest, res: Response) => {
         const { name, type, size, url, content } = req.body;
 
         const item = await VaultItem.create({
-            user: req.user.id,
+            user: req.user._id,
             name,
             type: type || getTypeByExtension(name),
             size: size || (content ? `${(content.length / 1024).toFixed(1)} KB` : '0 B'),
@@ -78,7 +78,7 @@ export const uploadItem = async (req: AuthRequest, res: Response) => {
             const type = getTypeByExtension(file.originalname);
 
             const item = await VaultItem.create({
-                user: req.user.id,
+                user: req.user._id,
                 name: file.originalname,
                 type,
                 size: formatSize(file.size),
@@ -103,7 +103,7 @@ export const updateItem = async (req: AuthRequest, res: Response) => {
             return;
         }
 
-        if (item.user.toString() !== req.user.id) {
+        if (item.user.toString() !== req.user._id) {
             res.status(401).json({ message: 'User not authorized' });
             return;
         }
@@ -131,7 +131,7 @@ export const deleteItem = async (req: AuthRequest, res: Response) => {
             return;
         }
 
-        if (item.user.toString() !== req.user.id) {
+        if (item.user.toString() !== req.user._id) {
             res.status(401).json({ message: 'User not authorized' });
             return;
         }
@@ -141,7 +141,8 @@ export const deleteItem = async (req: AuthRequest, res: Response) => {
         if (permanent === 'true') {
             // Delete file from disk if it exists
             if (item.url) {
-                const filePath = path.join(__dirname, '../../uploads', path.basename(item.url));
+                const uploadsDir = process.env.UPLOADS_PATH || 'd:\\SafeShell\\data\\uploads';
+                const filePath = path.join(uploadsDir, path.basename(item.url));
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 }
@@ -163,7 +164,7 @@ export const deleteItem = async (req: AuthRequest, res: Response) => {
 export const restoreItem = async (req: AuthRequest, res: Response) => {
     try {
         const item = await VaultItem.findById(req.params.id as string);
-        if (!item || item.user.toString() !== req.user.id) {
+        if (!item || item.user.toString() !== req.user._id) {
             return res.status(404).json({ message: 'Item not found' });
         }
         item.isDeleted = false;
@@ -178,7 +179,7 @@ export const restoreItem = async (req: AuthRequest, res: Response) => {
 export const emptyRecycleBin = async (req: AuthRequest, res: Response) => {
     try {
         const items = await VaultItem.find({
-            user: req.user.id,
+            user: req.user._id,
             isDeleted: true
         });
 
@@ -190,7 +191,8 @@ export const emptyRecycleBin = async (req: AuthRequest, res: Response) => {
         // Delete files from disk
         for (const item of items) {
             if (item.url) {
-                const filePath = path.join(__dirname, '../../uploads', path.basename(item.url));
+                const uploadsDir = process.env.UPLOADS_PATH || 'd:\\SafeShell\\data\\uploads';
+                const filePath = path.join(uploadsDir, path.basename(item.url));
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 }
@@ -199,7 +201,7 @@ export const emptyRecycleBin = async (req: AuthRequest, res: Response) => {
 
         // Delete from database
         await VaultItem.deleteMany({
-            user: req.user.id,
+            user: req.user._id,
             isDeleted: true
         });
 

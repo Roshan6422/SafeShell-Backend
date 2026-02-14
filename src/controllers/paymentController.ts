@@ -27,7 +27,7 @@ function generatePayHereHash(merchantId: string, orderId: string, amount: number
 // @access  Private
 export const generateHash = async (req: AuthRequest, res: Response) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
         const user = await User.findById(userId);
 
         if (!user) {
@@ -159,7 +159,7 @@ export const payhereNotify = async (req: Request, res: Response) => {
 // @access  Private
 export const getPaymentHistory = async (req: AuthRequest, res: Response) => {
     try {
-        const payments = await Payment.find({ user: req.user.id }, { date: -1 });
+        const payments = await Payment.find({ user: req.user._id }, { date: -1 });
         res.json(payments);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllUsers, getAllPayments, getAllTickets, replyToTicket } from '../controllers/adminController';
+import { getAllUsers, getAllPayments, getAllTickets, replyToTicket, deleteUser } from '../controllers/adminController';
 import { protect } from '../middleware/authMiddleware';
 import { admin } from '../middleware/adminMiddleware';
 
@@ -13,5 +13,6 @@ router.get('/users', getAllUsers);
 router.get('/payments', getAllPayments);
 router.get('/tickets', getAllTickets);
 router.post('/tickets/:id/reply', replyToTicket);
+router.delete('/users/:id', deleteUser);
 
 export default router;
