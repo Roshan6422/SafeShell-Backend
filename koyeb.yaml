@@ -1,0 +1,24 @@
+# Koyeb configuration for SafeShell Backend
+name: safeshell-backend
+services:
+  - name: safeshell-backend
+    type: web
+    image: node:18
+    build:
+      command: npm install && npm run build
+    run:
+      command: npm start
+    ports:
+      - port: 5000
+        protocol: http
+    env:
+      - key: PORT
+        value: "5000"
+      - key: NODE_ENV
+        value: production
+      - key: FIREBASE_SERVICE_ACCOUNT_BASE64
+        type: secret
+      - key: JWT_SECRET
+        type: secret
+      - key: ADMIN_SECRET
+        type: secret
