@@ -21,15 +21,34 @@ try {
     const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(__dirname, '../../serviceAccountKey.json');
 
     if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+        console.log('[FIREBASE] Found FIREBASE_SERVICE_ACCOUNT_BASE64 env variable');
+
         // Strip any whitespace/newlines that might have crept into the env variable during copy-paste
-        const cleanBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64.replace(/\s/g, '');
-        const decodedKey = Buffer.from(cleanBase64, 'base64').toString('utf8');
-        serviceAccount = JSON.parse(decodedKey);
+        const rawBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+        const cleanBase64 = rawBase64.replace(/\s/g, '');
+
+        console.log(`[FIREBASE] Base64 length: ${rawBase64.length} -> Cleaned length: ${cleanBase64.length}`);
+
+        try {
+            const decodedKey = Buffer.from(cleanBase64, 'base64').toString('utf8');
+            console.log(`[FIREBASE] Decoded JSON length: ${decodedKey.length}`);
+
+            // Log first 50 chars of decoded key for debugging (safe, as it's just the header part)
+            console.log(`[FIREBASE] Decoded snippet: ${decodedKey.substring(0, 50)}...`);
+
+            serviceAccount = JSON.parse(decodedKey);
+            console.log('[FIREBASE] JSON parse successful');
+        } catch (err: any) {
+            console.error(`[FIREBASE] Failed to decode/parse Base64: ${err.message}`);
+        }
     } else if (fs.existsSync(serviceAccountPath)) {
+        console.log('[FIREBASE] Found serviceAccountKey.json file');
         serviceAccount = require(serviceAccountPath);
+    } else {
+        console.warn('[FIREBASE] No credentials found (FIREBASE_SERVICE_ACCOUNT_BASE64 or serviceAccountKey.json)');
     }
-} catch (error) {
-    console.warn('⚠️  Firebase Service Account Key not found or invalid during initial load.');
+} catch (error: any) {
+    console.warn(`⚠️  Firebase Service Account Key not found or invalid during initial load: ${error.message}`);
 }
 
 if (serviceAccount && !admin.apps.length) {
