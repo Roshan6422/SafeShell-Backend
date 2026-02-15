@@ -21,7 +21,9 @@ try {
     const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(__dirname, '../../serviceAccountKey.json');
 
     if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-        const decodedKey = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+        // Strip any whitespace/newlines that might have crept into the env variable during copy-paste
+        const cleanBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64.replace(/\s/g, '');
+        const decodedKey = Buffer.from(cleanBase64, 'base64').toString('utf8');
         serviceAccount = JSON.parse(decodedKey);
     } else if (fs.existsSync(serviceAccountPath)) {
         serviceAccount = require(serviceAccountPath);
