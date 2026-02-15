@@ -44,7 +44,7 @@ if (serviceAccount && !admin.apps.length) {
 }
 
 /**
- * Tests the actual Firestore connection by performing a small read.
+ * Tests the actual Firestore connection by performing a small read with a timeout.
  * If Firestore is unreachable or misconfigured, drops back to in-memory mode.
  */
 export async function verifyFirestoreConnection(): Promise<void> {
@@ -54,8 +54,17 @@ export async function verifyFirestoreConnection(): Promise<void> {
     }
 
     try {
-        // Try a lightweight read to confirm Firestore is reachable
-        await firebaseState.db.collection('_health_check').limit(1).get();
+        console.log('⏳ Verifying Firestore connection...');
+        // Try a lightweight read to confirm Firestore is reachable, with a 5-second timeout
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Firestore connection timeout')), 5000)
+        );
+
+        await Promise.race([
+            firebaseState.db.collection('_health_check').limit(1).get(),
+            timeoutPromise
+        ]);
+
         console.log('✅ Firestore connection verified');
     } catch (error: any) {
         console.error('❌ Firestore connection test failed:', error.message || error);
@@ -64,6 +73,7 @@ export async function verifyFirestoreConnection(): Promise<void> {
         firebaseState.db = null;
     }
 }
+
 
 export default admin;
 
