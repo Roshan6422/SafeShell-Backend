@@ -67,6 +67,11 @@ app.get('/api/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', message: 'Server is running' });
 });
 
+// 404 Handler
+app.use((req: Request, res: Response, next: any) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
 // Global Error Handler
 app.use((err: any, req: Request, res: Response, next: any) => {
     console.error('💥 Unhandled Error:', err);
