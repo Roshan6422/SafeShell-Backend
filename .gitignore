@@ -24,3 +24,5 @@ mongodb*
 *.exe
 *.msi
 *.zip
+
+*.txt
