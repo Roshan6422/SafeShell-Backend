@@ -7,6 +7,10 @@ import fs from 'fs';
 
 const app: Application = express();
 
+// Body Parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Security Middleware
 app.use(helmet());
 app.use(cors({
