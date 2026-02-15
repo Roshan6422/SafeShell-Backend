@@ -2,14 +2,15 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import app from './app';
-import './config/firebase'; // Initialize Firebase
+import { verifyFirestoreConnection } from './config/firebase';
 
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
     try {
-        // Firebase is initialized via import
-        console.log('Firebase initialized.');
+        // Verify Firestore is actually reachable; falls back to in-memory if not
+        await verifyFirestoreConnection();
+        console.log('Database layer ready.');
     } catch (err) {
         console.error('Server startup failed:', err);
         process.exit(1);

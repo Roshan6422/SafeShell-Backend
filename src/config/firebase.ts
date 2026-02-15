@@ -27,7 +27,7 @@ if (serviceAccount && !admin.apps.length) {
             credential: admin.credential.cert(serviceAccount),
         });
         firebaseInitialized = true;
-        console.log('✅ Firebase Admin Initialized');
+        console.log('✅ Firebase Admin SDK Initialized');
     } catch (error) {
         console.error('Firebase Initialization Error:', error);
     }
@@ -39,5 +39,25 @@ if (firebaseInitialized) {
     db = admin.firestore();
 }
 
-export { db, firebaseInitialized };
+/**
+ * Tests the actual Firestore connection by performing a small read.
+ * If Firestore is unreachable or misconfigured, drops back to in-memory mode.
+ */
+async function verifyFirestoreConnection(): Promise<void> {
+    if (!firebaseInitialized || !db) return;
+
+    try {
+        // Try a lightweight read to confirm Firestore is reachable
+        await db.collection('_health_check').limit(1).get();
+        console.log('✅ Firestore connection verified');
+    } catch (error: any) {
+        console.error('❌ Firestore connection test failed:', error.message || error);
+        console.warn('⚠️  Falling back to IN-MEMORY mode (data will not persist).');
+        firebaseInitialized = false;
+        db = null;
+    }
+}
+
+export { db, firebaseInitialized, verifyFirestoreConnection };
 export default admin;
+
