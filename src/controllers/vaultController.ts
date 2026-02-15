@@ -110,8 +110,8 @@ export const updateItem = async (req: AuthRequest, res: Response) => {
             return;
         }
 
-        const { name, content } = req.body;
-        if (name) item.name = name;
+        const { name: newName, content } = req.body;
+        if (newName) item.name = newName;
         if (content !== undefined) {
             item.content = content;
             item.size = `${(content.length / 1024).toFixed(1)} KB`;
