@@ -61,6 +61,11 @@ export const sendCommand = async (req: AuthRequest, res: Response) => {
             token: targetUser.deviceToken,
         };
 
+        const { firebaseState } = require('../config/firebase');
+        if (!firebaseState.firebaseInitialized) {
+            return res.status(503).json({ message: 'Firebase service is not initialized' });
+        }
+
         const response = await admin.messaging().send(message);
 
         res.status(200).json({

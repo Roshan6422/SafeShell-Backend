@@ -1,4 +1,4 @@
-import { db, firebaseInitialized } from '../../config/firebase';
+import { firebaseState } from '../../config/firebase';
 import { CollectionReference, DocumentData, QuerySnapshot } from 'firebase-admin/firestore';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -72,16 +72,16 @@ export class FirestoreModel {
     // ─── Firestore Methods ────────────────────────────────────────────
 
     static getCollection(): CollectionReference {
-        if (!firebaseInitialized || !db) {
+        if (!firebaseState.firebaseInitialized || !firebaseState.db) {
             throw new Error('Firebase not initialized');
         }
-        return db.collection(this.collectionName);
+        return firebaseState.db.collection(this.collectionName);
     }
 
     // ─── Static Query Methods (with fallback) ─────────────────────────
 
     static async findOne(query: { [key: string]: any }): Promise<any | null> {
-        if (!firebaseInitialized) {
+        if (!firebaseState.firebaseInitialized) {
             return this._memFindOne(query);
         }
 
@@ -103,7 +103,7 @@ export class FirestoreModel {
     }
 
     static async findById(id: string): Promise<any | null> {
-        if (!firebaseInitialized) {
+        if (!firebaseState.firebaseInitialized) {
             return this._memFindById(id);
         }
         const doc = await this.getCollection().doc(id).get();
@@ -112,7 +112,7 @@ export class FirestoreModel {
     }
 
     static async find(query: { [key: string]: any } = {}, sortOptions: { [key: string]: 'asc' | 'desc' | 1 | -1 } = {}): Promise<any[]> {
-        if (!firebaseInitialized) {
+        if (!firebaseState.firebaseInitialized) {
             return this._memFind(query);
         }
 
@@ -132,7 +132,7 @@ export class FirestoreModel {
     }
 
     static async create(data: any): Promise<any> {
-        if (!firebaseInitialized) {
+        if (!firebaseState.firebaseInitialized) {
             return this._memCreate(data);
         }
 
@@ -148,7 +148,7 @@ export class FirestoreModel {
     }
 
     static async deleteMany(query: { [key: string]: any }): Promise<void> {
-        if (!firebaseInitialized) {
+        if (!firebaseState.firebaseInitialized) {
             return this._memDeleteMany(query);
         }
 
@@ -158,7 +158,7 @@ export class FirestoreModel {
         }
         const snapshot = await ref.get();
 
-        const batch = db!.batch();
+        const batch = firebaseState.db!.batch();
         snapshot.docs.forEach((doc: any) => {
             batch.delete(doc.ref);
         });
@@ -168,7 +168,7 @@ export class FirestoreModel {
     // ─── Instance Methods (with fallback) ─────────────────────────────
 
     async save(): Promise<this> {
-        if (!firebaseInitialized) {
+        if (!firebaseState.firebaseInitialized) {
             return this._memSave();
         }
 
@@ -192,7 +192,7 @@ export class FirestoreModel {
     }
 
     async deleteOne(): Promise<void> {
-        if (!firebaseInitialized) {
+        if (!firebaseState.firebaseInitialized) {
             return this._memDeleteOne();
         }
         if (this._id) {
