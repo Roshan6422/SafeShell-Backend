@@ -1,4 +1,6 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 dotenv.config();
 
 import app from './app';
@@ -6,7 +8,15 @@ import { verifyFirestoreConnection } from './config/firebase';
 
 const PORT = process.env.PORT || 8000;
 
+// Ensure persistent directories exist
+const dbPath = process.env.DB_PATH || path.join(process.cwd(), 'data', 'temp_db.json');
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
+
 const startServer = async () => {
+
     console.log(`[STARTUP] Starting server... NODE_ENV: ${process.env.NODE_ENV}`);
     console.log(`[STARTUP] Expected PORT: ${PORT}`);
 
