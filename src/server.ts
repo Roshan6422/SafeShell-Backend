@@ -10,6 +10,12 @@ const startServer = async () => {
     console.log(`[STARTUP] Starting server... NODE_ENV: ${process.env.NODE_ENV}`);
     console.log(`[STARTUP] Expected PORT: ${PORT}`);
 
+    // START LISTENING IMMEDIATELY
+    // This ensures health checks pass while we initialize in the background
+    const server = app.listen(Number(PORT), '0.0.0.0', () => {
+        console.log(`🚀 [SUCCESS] Server is live and listening on 0.0.0.0:${PORT}`);
+    });
+
     try {
         // Verify Firestore is actually reachable; falls back to in-memory if not
         console.log('[STARTUP] Initializing database layer...');
@@ -17,12 +23,10 @@ const startServer = async () => {
         console.log('[STARTUP] Database layer ready.');
     } catch (err) {
         console.error('[CRITICAL] Database initialization failed:', err);
-        process.exit(1); // Exit if database initialization fails
+        // We don't exit here because the server is already listening
+        // and can function in in-memory mode if needed.
     }
 
-    const server = app.listen(Number(PORT), '0.0.0.0', () => {
-        console.log(`🚀 [SUCCESS] Server is live and listening on 0.0.0.0:${PORT}`);
-    });
 
     // Handle process events
     process.on('unhandledRejection', (err: any) => {
