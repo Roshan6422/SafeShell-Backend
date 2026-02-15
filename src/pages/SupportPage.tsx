@@ -76,6 +76,24 @@ export default function SupportPage() {
         }
     };
 
+    const handleStatusUpdate = async (newStatus: string) => {
+        if (!selectedTicket) return;
+        try {
+            const token = localStorage.getItem('adminToken');
+            await axios.patch(`${getBaseUrl()}/api/admin/tickets/${selectedTicket._id}/status`,
+                { status: newStatus },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setSelectedTicket((prev: any) => ({ ...prev, status: newStatus }));
+            setTickets(prev => prev.map(t =>
+                t._id === selectedTicket._id ? { ...t, status: newStatus } : t
+            ));
+        } catch (err) {
+            alert("Failed to update ticket status");
+        }
+    };
+
     const filteredTickets = tickets.filter(t =>
         t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.user?.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -166,9 +184,21 @@ export default function SupportPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <button className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
-                                    <MoreHorizontal size={20} />
-                                </button>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => handleStatusUpdate(selectedTicket.status === 'open' ? 'closed' : 'open')}
+                                        className={`px-4 py-2 rounded-xl border text-sm font-bold transition-all flex items-center gap-2 ${selectedTicket.status === 'open'
+                                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white shadow-lg shadow-emerald-500/10'
+                                            : 'bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white shadow-lg shadow-blue-500/10'
+                                            }`}
+                                    >
+                                        <CheckCircle2 size={16} />
+                                        {selectedTicket.status === 'open' ? 'Resolve Ticket' : 'Reopen Ticket'}
+                                    </button>
+                                    <button className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
+                                        <MoreHorizontal size={20} />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Chat Messages */}

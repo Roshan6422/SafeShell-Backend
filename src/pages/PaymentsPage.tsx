@@ -14,10 +14,36 @@ export default function PaymentsPage() {
         const fetchPayments = async () => {
             try {
                 const token = localStorage.getItem('adminToken');
-                const res = await axios.get(`${getBaseUrl()}/api/payment/all`, {
+                const res = await axios.get(`${getBaseUrl()}/api/admin/payments`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setPayments(res.data);
+
+                // Calculate real chart data
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const last7Days = [...Array(7)].map((_, i) => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - (6 - i));
+                    return {
+                        name: days[d.getDay()],
+                        amount: 0,
+                        rawDate: d
+                    };
+                });
+
+                res.data.forEach((p: any) => {
+                    const pDate = new Date(p.date);
+                    const dayMatch = last7Days.find(d =>
+                        d.rawDate.getDate() === pDate.getDate() &&
+                        d.rawDate.getMonth() === pDate.getMonth() &&
+                        d.rawDate.getFullYear() === pDate.getFullYear()
+                    );
+                    if (dayMatch) {
+                        dayMatch.amount += p.amount;
+                    }
+                });
+                setRealChartData(last7Days);
+
             } catch (err) {
                 console.error(err);
             } finally {
@@ -27,16 +53,7 @@ export default function PaymentsPage() {
         fetchPayments();
     }, []);
 
-    // Mock data for charts (replace with real aggregation if available)
-    const chartData = [
-        { name: 'Mon', amount: 4000 },
-        { name: 'Tue', amount: 3000 },
-        { name: 'Wed', amount: 2000 },
-        { name: 'Thu', amount: 2780 },
-        { name: 'Fri', amount: 1890 },
-        { name: 'Sat', amount: 2390 },
-        { name: 'Sun', amount: 3490 },
-    ];
+    const [realChartData, setRealChartData] = useState<any[]>([]);
 
     return (
         <div className="space-y-8 max-w-[1600px] mx-auto pt-6">
@@ -129,7 +146,7 @@ export default function PaymentsPage() {
                     </div>
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData} barSize={40}>
+                            <BarChart data={realChartData} barSize={40}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                                 <XAxis
                                     dataKey="name"
@@ -158,7 +175,7 @@ export default function PaymentsPage() {
                                     itemStyle={{ color: '#f8fafc' }}
                                 />
                                 <Bar dataKey="amount" radius={[8, 8, 8, 8]}>
-                                    {chartData.map((entry, index) => (
+                                    {realChartData.map((entry: any, index: number) => (
                                         <Cell
                                             key={`cell-${index}`}
                                             fill="#3b82f6"

@@ -13,6 +13,8 @@ export interface IUser extends IFirestoreDocument {
     role: 'user' | 'admin';
     subscriptionStatus: 'free' | 'pro';
     subscriptionExpiry?: Date;
+    isSuspended?: boolean;
+    deviceToken?: string;
 }
 
 export class User extends FirestoreModel {
@@ -29,17 +31,15 @@ export class User extends FirestoreModel {
     public role!: 'user' | 'admin';
     public subscriptionStatus!: 'free' | 'pro';
     public subscriptionExpiry?: Date;
+    public isSuspended?: boolean;
+    public deviceToken?: string;
 
     constructor(data: any) {
         super(data);
     }
 
     static async findByEmail(email: string): Promise<User | null> {
-        const usersRef = this.getCollection();
-        const snapshot = await usersRef.where('email', '==', email).limit(1).get();
-        if (snapshot.empty) return null;
-        const doc = snapshot.docs[0];
-        return new User({ _id: doc.id, ...doc.data() });
+        return this.findOne({ email });
     }
 }
 

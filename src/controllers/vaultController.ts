@@ -54,6 +54,7 @@ export const createItem = async (req: AuthRequest, res: Response) => {
             size: size || (content ? `${(content.length / 1024).toFixed(1)} KB` : '0 B'),
             url,
             content,
+            isDeleted: false,
         });
 
         res.status(201).json(item);
@@ -83,6 +84,7 @@ export const uploadItem = async (req: AuthRequest, res: Response) => {
                 type,
                 size: formatSize(file.size),
                 url: `/uploads/${file.filename}`,
+                isDeleted: false,
             });
             items.push(item);
         }
@@ -141,7 +143,7 @@ export const deleteItem = async (req: AuthRequest, res: Response) => {
         if (permanent === 'true') {
             // Delete file from disk if it exists
             if (item.url) {
-                const uploadsDir = process.env.UPLOADS_PATH || 'd:\\SafeShell\\data\\uploads';
+                const uploadsDir = process.env.UPLOADS_PATH || path.join(process.cwd(), 'data', 'uploads');
                 const filePath = path.join(uploadsDir, path.basename(item.url));
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
@@ -191,7 +193,7 @@ export const emptyRecycleBin = async (req: AuthRequest, res: Response) => {
         // Delete files from disk
         for (const item of items) {
             if (item.url) {
-                const uploadsDir = process.env.UPLOADS_PATH || 'd:\\SafeShell\\data\\uploads';
+                const uploadsDir = process.env.UPLOADS_PATH || path.join(process.cwd(), 'data', 'uploads');
                 const filePath = path.join(uploadsDir, path.basename(item.url));
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);

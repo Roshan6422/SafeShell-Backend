@@ -8,7 +8,7 @@ import { protect } from '../middleware/authMiddleware';
 const router = express.Router();
 
 // Ensure uploads directory exists
-const uploadsDir = process.env.UPLOADS_PATH || 'd:\\SafeShell\\data\\uploads';
+const uploadsDir = process.env.UPLOADS_PATH || path.join(process.cwd(), 'data', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }

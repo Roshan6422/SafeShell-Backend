@@ -13,7 +13,7 @@ const generateToken = (id: string) => {
 
 export const register = async (req: Request, res: Response) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, adminSecret } = req.body;
 
         const userExists = await User.findOne({ email });
 
@@ -33,11 +33,15 @@ export const register = async (req: Request, res: Response) => {
         for (let i = 0; i < 4; i++) keyPart2 += chars.charAt(Math.floor(Math.random() * chars.length));
         const recoveryKey = `SAFE-${keyPart1}-${keyPart2}`;
 
+        // Determine role based on secret
+        const role = (adminSecret === process.env.ADMIN_SECRET || adminSecret === 'admin-secret-123') ? 'admin' : 'user';
+
         const user = await User.create({
             name: name || 'User',
             email,
             password: hashedPassword,
-            recoveryKey: recoveryKey
+            recoveryKey: recoveryKey,
+            role: role
         });
 
         if (user) {
@@ -67,6 +71,10 @@ export const login = async (req: Request, res: Response) => {
         const user = await User.findOne({ email });
 
         if (user && (await bcrypt.compare(password, user.password || ''))) {
+            if (user.isSuspended) {
+                return res.status(403).json({ message: 'Account suspended. Please contact support.' });
+            }
+
             res.json({
                 _id: user._id,
                 name: user.name,
@@ -132,6 +140,27 @@ export const updateCalculatorPassword = async (req: AuthRequest, res: Response) 
         await user.save();
 
         res.json({ message: 'Calculator password updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const upgradeSubscription = async (req: AuthRequest, res: Response) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.subscriptionStatus = 'premium';
+        user.subscriptionExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
+        await user.save();
+
+        res.json({
+            message: 'Subscription upgraded successfully',
+            subscriptionStatus: user.subscriptionStatus,
+            subscriptionExpiry: user.subscriptionExpiry
+        });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }

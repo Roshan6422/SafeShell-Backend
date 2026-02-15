@@ -14,7 +14,7 @@ export interface IFirestoreDocument {
 let inMemoryStore: { [collection: string]: { [id: string]: any } } = {};
 let idCounter = 1;
 let loadedFromDisk = false;
-const DB_FILE = process.env.DB_PATH || 'd:\\SafeShell\\data\\temp_db.json';
+const DB_FILE = process.env.DB_PATH || path.join(process.cwd(), 'data', 'temp_db.json');
 
 function saveToDisk() {
     try {
@@ -52,6 +52,7 @@ function getMemoryCollection(name: string): { [id: string]: any } {
     loadFromDisk();
     if (!inMemoryStore[name]) {
         inMemoryStore[name] = {};
+        saveToDisk(); // Ensure it exists
     }
     return inMemoryStore[name];
 }
@@ -236,7 +237,15 @@ export class FirestoreModel {
         for (const [id, doc] of Object.entries(col)) {
             let match = true;
             for (const [key, value] of Object.entries(query)) {
-                if (doc[key] !== value) { match = false; break; }
+                const docValue = doc[key];
+
+                // Allow matching missing boolean fields against false
+                const effectiveDocValue = (docValue === undefined && typeof value === 'boolean') ? false : docValue;
+
+                if (effectiveDocValue !== value) {
+                    match = false;
+                    break;
+                }
             }
             if (match) results.push(new this({ _id: id, ...doc }));
         }

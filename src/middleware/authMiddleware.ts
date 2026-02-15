@@ -26,6 +26,11 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
                 return;
             }
 
+            if (req.user.isSuspended) {
+                res.status(403).json({ message: 'Account suspended' });
+                return;
+            }
+
             next();
             return;
         } catch (error: any) {

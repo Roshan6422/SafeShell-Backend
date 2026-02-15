@@ -247,7 +247,7 @@ export default function Login() {
 
                                     <button
                                         type="button"
-                                        onClick={() => {/* Implement forgot password */ }}
+                                        onClick={() => navigate('/forgot-password')}
                                         className="text-[#4DA3FF] text-[13px] font-semibold hover:text-[#7BB7FF] transition-colors"
                                     >
                                         Forgot password?
@@ -264,7 +264,18 @@ export default function Login() {
                                             className="flex items-center gap-2.5 text-red-400 text-[13px] bg-red-500/10 p-3.5 rounded-xl border border-red-500/20"
                                         >
                                             <AlertCircle size={18} className="shrink-0" />
-                                            <span>{error}</span>
+                                            <div className="flex flex-col">
+                                                <span>{error}</span>
+                                                {error.includes('Admin privileges required') && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => navigate('/promote')}
+                                                        className="text-[#4DA3FF] text-[11px] font-bold mt-1 text-left underline hover:text-[#7BB7FF]"
+                                                    >
+                                                        Promote your account to Admin →
+                                                    </button>
+                                                )}
+                                            </div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -328,7 +339,7 @@ export default function Login() {
                                 >
                                     <button
                                         type="button"
-                                        onClick={() => {/* Implement register navigation */ }}
+                                        onClick={() => navigate('/register')}
                                         className="text-[#EAF2FF]/60 text-[14px] hover:text-[#4DA3FF] transition-colors"
                                     >
                                         Create an account{' '}

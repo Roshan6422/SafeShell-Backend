@@ -1,12 +1,14 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
+import fs from 'fs';
 
 const app: Application = express();
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // PayHere webhook sends form-encoded data
+// Security Middleware
+app.use(helmet());
 app.use(cors({
     origin: (origin, callback) => callback(null, true), // Allow all origins while supporting credentials
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -14,18 +16,31 @@ app.use(cors({
     credentials: true
 }));
 
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api', limiter);
+
 // Request logger
 app.use((req, res, next) => {
     const start = Date.now();
+    console.log(`[INCOMING] ${req.method} ${req.url} (Path: ${req.path})`);
     res.on('finish', () => {
         const duration = Date.now() - start;
-        console.log(`${req.method} ${req.path} [${res.statusCode}] - ${duration}ms`);
+        console.log(`[OUTGOING] ${req.method} ${req.path} [${res.statusCode}] - ${duration}ms`);
     });
     next();
 });
 
 // Serve uploaded files
-const uploadsPath = process.env.UPLOADS_PATH || 'd:\\SafeShell\\data\\uploads';
+const uploadsPath = process.env.UPLOADS_PATH || path.join(process.cwd(), 'data', 'uploads');
+if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+}
 app.use('/uploads', express.static(uploadsPath));
 
 // Routes
@@ -34,12 +49,14 @@ import vaultRoutes from './routes/vaultRoutes';
 import adminRoutes from './routes/adminRoutes';
 import supportRoutes from './routes/supportRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import deviceRoutes from './routes/deviceRoutes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/vault', vaultRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/device', deviceRoutes);
 
 // Health Check
 app.get('/api/health', (req: Request, res: Response) => {

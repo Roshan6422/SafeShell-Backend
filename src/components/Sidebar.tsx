@@ -14,7 +14,7 @@ const Sidebar = () => {
 
             <div className="flex-1 px-4 py-4 space-y-8">
                 <nav className="space-y-1">
-                    <NavItem to="/" icon={<LayoutDashboard size={20} />} label="Overview" />
+                    <NavItem to="/dashboard" icon={<LayoutDashboard size={20} />} label="Overview" />
                     <NavItem to="/users" icon={<Users size={20} />} label="Users" />
                     <NavItem to="/payments" icon={<CreditCard size={20} />} label="Payments" />
                     <NavItem to="/support" icon={<HelpCircle size={20} />} label="Support" />

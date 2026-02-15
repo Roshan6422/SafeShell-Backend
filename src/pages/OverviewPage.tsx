@@ -36,6 +36,33 @@ export default function OverviewPage() {
                 const recentPayments = paymentsRes.data.slice(-3).map((p: any) => ({ type: 'payment', title: `New payment: $${p.amount}`, date: p.date }));
                 const activity = [...recentUsers, ...recentPayments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+                // Calculate chart data from real payments
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const last7Days = [...Array(7)].map((_, i) => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - (6 - i));
+                    return {
+                        name: days[d.getDay()],
+                        fullName: d.toLocaleDateString(),
+                        amount: 0,
+                        rawDate: d
+                    };
+                });
+
+                paymentsRes.data.forEach((p: any) => {
+                    const pDate = new Date(p.date);
+                    const dayMatch = last7Days.find(d =>
+                        d.rawDate.getDate() === pDate.getDate() &&
+                        d.rawDate.getMonth() === pDate.getMonth() &&
+                        d.rawDate.getFullYear() === pDate.getFullYear()
+                    );
+                    if (dayMatch) {
+                        dayMatch.amount += p.amount;
+                    }
+                });
+
+                setRealChartData(last7Days);
+
                 setStats({
                     totalUsers,
                     totalRevenue,
@@ -51,15 +78,7 @@ export default function OverviewPage() {
         fetchStats();
     }, []);
 
-    const chartData = [
-        { name: 'Mon', amount: 4000 },
-        { name: 'Tue', amount: 3000 },
-        { name: 'Wed', amount: 5000 },
-        { name: 'Thu', amount: 2780 },
-        { name: 'Fri', amount: 1890 },
-        { name: 'Sat', amount: 2390 },
-        { name: 'Sun', amount: 3490 },
-    ];
+    const [realChartData, setRealChartData] = useState<any[]>([]);
 
     if (loading) {
         return (
@@ -152,7 +171,7 @@ export default function OverviewPage() {
 
                     <div className="h-[350px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData}>
+                            <AreaChart data={realChartData}>
                                 <defs>
                                     <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />

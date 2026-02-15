@@ -11,8 +11,16 @@ uploads/*.mov
 uploads/*.jpeg
 server_log.txt
 build_log.txt
+serviceAccountKey.json*
 *.log
-serviceAccountKey.json
+push_error_3*
+src/scripts/verifyFix.ts
 data/
 temp_db.json
 .DS_Store
+
+# Large files
+mongodb*
+*.exe
+*.msi
+*.zip
