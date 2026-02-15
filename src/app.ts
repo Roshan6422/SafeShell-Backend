@@ -63,8 +63,13 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/device', deviceRoutes);
 
 // Health Check
+import { firebaseState } from './config/firebase';
 app.get('/api/health', (req: Request, res: Response) => {
-    res.json({ status: 'ok', message: 'Server is running' });
+    res.json({
+        status: 'ok',
+        message: 'Server is running',
+        dbStatus: firebaseState.firebaseInitialized ? 'firestore' : 'in-memory'
+    });
 });
 
 // 404 Handler
