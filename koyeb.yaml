@@ -9,11 +9,11 @@ services:
     run:
       command: npm start
     ports:
-      - port: 5000
+      - port: 8080
         protocol: http
     env:
       - key: PORT
-        value: "5000"
+        value: "8080"
       - key: NODE_ENV
         value: production
       - key: FIREBASE_SERVICE_ACCOUNT_BASE64
