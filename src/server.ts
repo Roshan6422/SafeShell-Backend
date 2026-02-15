@@ -4,7 +4,7 @@ dotenv.config();
 import app from './app';
 import { verifyFirestoreConnection } from './config/firebase';
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8000;
 
 const startServer = async () => {
     console.log(`[STARTUP] Starting server... NODE_ENV: ${process.env.NODE_ENV}`);
