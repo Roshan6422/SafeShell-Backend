@@ -1,0 +1,63 @@
+﻿node.exe : C:\Users\Rosha
+n\Documents\GitHub\SafeSh
+ell\backend\src\controlle
+rs\vaultController.ts:112
+At C:\Program 
+Files\nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  (C:\Users\Roshan...n   
+ troller.ts:112:Strin    
+g) [], RemoteExcepti    
+on
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 
+        const { name, 
+content } = req.body;
+                ^
+
+SyntaxError: Identifier 
+'name' has already been 
+declared
+    at wrapSafe (node:int
+ernal/modules/cjs/loader:
+1662:18)
+    at Module._compile (n
+ode:internal/modules/cjs/
+loader:1704:20)
+    at Module.m._compile 
+(C:\Users\Roshan\Document
+s\GitHub\SafeShell\backen
+d\node_modules\ts-node\sr
+c\index.ts:1618:23)
+    at node:internal/modu
+les/cjs/loader:1895:10
+    at Object.require.ext
+ensions.<computed> [as 
+.ts] (C:\Users\Roshan\Doc
+uments\GitHub\SafeShell\b
+ackend\node_modules\ts-no
+de\src\index.ts:1621:12)
+    at Module.load (node:
+internal/modules/cjs/load
+er:1465:32)
+    at Function._load (no
+de:internal/modules/cjs/l
+oader:1282:12)
+    at 
+TracingChannel.traceSync 
+(node:diagnostics_channel
+:322:14)
+    at wrapModuleLoad (no
+de:internal/modules/cjs/l
+oader:235:24)
+    at Module.require (no
+de:internal/modules/cjs/l
+oader:1487:12)
