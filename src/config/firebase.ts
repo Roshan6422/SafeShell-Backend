@@ -23,11 +23,16 @@ try {
     if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
         console.log('[FIREBASE] Found FIREBASE_SERVICE_ACCOUNT_BASE64 env variable');
 
-        // Strip any whitespace/newlines that might have crept into the env variable during copy-paste
+        // Strip ANY character that is not a valid base64 character. 
+        // This is CRITICAL because characters like '\' or 'n' (from literal \n) 
+        // will shift the bits and corrupt the entire JSON if not removed.
         const rawBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
-        const cleanBase64 = rawBase64.replace(/\s/g, '');
+        const cleanBase64 = rawBase64
+            .replace(/-/g, '+') // Support URL-safe base64
+            .replace(/_/g, '/') // Support URL-safe base64
+            .replace(/[^A-Za-z0-9+/=]/g, ''); // Strip everything else
 
-        console.log(`[FIREBASE] Base64 length: ${rawBase64.length} -> Cleaned length: ${cleanBase64.length}`);
+        console.log(`[FIREBASE] Base64 length: ${rawBase64.length} -> Sanitized length: ${cleanBase64.length}`);
 
         try {
             const decodedKey = Buffer.from(cleanBase64, 'base64').toString('utf8');
