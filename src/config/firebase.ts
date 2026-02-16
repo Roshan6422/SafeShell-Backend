@@ -35,13 +35,17 @@ try {
         console.log(`[FIREBASE] Base64 length: ${rawBase64.length} -> Sanitized length: ${cleanBase64.length}`);
 
         try {
-            const decodedKey = Buffer.from(cleanBase64, 'base64').toString('utf8');
+            let decodedKey = Buffer.from(cleanBase64, 'base64').toString('utf8');
             console.log(`[FIREBASE] Decoded JSON length: ${decodedKey.length}`);
 
-            // Log first 50 chars of decoded key for debugging (safe, as it's just the header part)
-            console.log(`[FIREBASE] Decoded snippet: ${decodedKey.substring(0, 50)}...`);
+            // Strip bare control characters (like literal newlines) that break JSON.parse
+            // but keep the string structure intact.
+            const sanitizedJSON = decodedKey.replace(/[\x00-\x1F]/g, '');
 
-            serviceAccount = JSON.parse(decodedKey);
+            // Log first 50 chars of sanitized key for debugging
+            console.log(`[FIREBASE] Decoded snippet: ${sanitizedJSON.substring(0, 50)}...`);
+
+            serviceAccount = JSON.parse(sanitizedJSON);
             console.log('[FIREBASE] JSON parse successful');
         } catch (err: any) {
             console.error(`[FIREBASE] Failed to decode/parse Base64: ${err.message}`);
