@@ -23,43 +23,33 @@ try {
     if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
         console.log('[FIREBASE] Found FIREBASE_SERVICE_ACCOUNT_BASE64 env variable');
 
-        // Strip ANY character that is not a valid base64 character. 
-        // This is CRITICAL because characters like '\' or 'n' (from literal \n) 
-        // will shift the bits and corrupt the entire JSON if not removed.
-        const rawBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
-        const cleanBase64 = rawBase64
-            .replace(/-/g, '+') // Support URL-safe base64
-            .replace(/_/g, '/') // Support URL-safe base64
-            .replace(/[^A-Za-z0-9+/=]/g, ''); // Strip everything else
-
-        console.log(`[FIREBASE] Base64 length: ${rawBase64.length} -> Sanitized length: ${cleanBase64.length}`);
-
         try {
-            let decodedKey = Buffer.from(cleanBase64, 'base64').toString('utf8');
+            // ONLY remove whitespace (newlines, spaces) which are valid in Base64 formatting
+            const cleanBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64.replace(/\s/g, '');
+            console.log(`[FIREBASE] Base64 length: ${process.env.FIREBASE_SERVICE_ACCOUNT_BASE64.length} -> Cleaned length: ${cleanBase64.length}`);
+
+            const decodedKey = Buffer.from(cleanBase64, 'base64').toString('utf8');
             console.log(`[FIREBASE] Decoded JSON length: ${decodedKey.length}`);
 
-            // Strip bare control characters (like literal newlines) that break JSON.parse
-            const sanitizedJSON = decodedKey.replace(/[\x00-\x1F]/g, '');
+            // Log boundaries to check for truncation
+            console.log(`[FIREBASE] JSON Start: ${decodedKey.substring(0, 40)}...`);
+            console.log(`[FIREBASE] JSON End: ...${decodedKey.substring(decodedKey.length - 40)}`);
 
-            console.log(`[FIREBASE] Decoded Start: ${sanitizedJSON.substring(0, 50)}...`);
-            console.log(`[FIREBASE] Decoded End: ...${sanitizedJSON.substring(sanitizedJSON.length - 50)}`);
-
-            try {
-                serviceAccount = JSON.parse(sanitizedJSON);
-                console.log('[FIREBASE] JSON parse successful');
-            } catch (parseErr: any) {
-                // Pinpoint the error
-                const posStr = parseErr.message.match(/position (\d+)/);
-                if (posStr && posStr[1]) {
-                    const pos = parseInt(posStr[1], 10);
-                    const start = Math.max(0, pos - 20);
-                    const end = Math.min(sanitizedJSON.length, pos + 20);
-                    console.error(`[FIREBASE] JSON Error at pos ${pos}: "...${sanitizedJSON.substring(start, end)}..."`);
-                }
-                throw parseErr;
-            }
+            serviceAccount = JSON.parse(decodedKey);
+            console.log('[FIREBASE] JSON parse successful');
         } catch (err: any) {
             console.error(`[FIREBASE] Failed to decode/parse Base64: ${err.message}`);
+            // If it fails, log a snippet around the error if it's a JSON error
+            if (err.message.includes('position')) {
+                const posMatch = err.message.match(/position (\d+)/);
+                if (posMatch) {
+                    const pos = parseInt(posMatch[1], 10);
+                    const decodedKey = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64!.replace(/\s/g, ''), 'base64').toString('utf8');
+                    const start = Math.max(0, pos - 20);
+                    const end = Math.min(decodedKey.length, pos + 20);
+                    console.error(`[FIREBASE] Error context: "...${decodedKey.substring(start, end)}..."`);
+                }
+            }
         }
     } else if (fs.existsSync(serviceAccountPath)) {
         console.log('[FIREBASE] Found serviceAccountKey.json file');
