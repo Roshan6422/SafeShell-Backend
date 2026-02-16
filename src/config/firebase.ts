@@ -39,14 +39,25 @@ try {
             console.log(`[FIREBASE] Decoded JSON length: ${decodedKey.length}`);
 
             // Strip bare control characters (like literal newlines) that break JSON.parse
-            // but keep the string structure intact.
             const sanitizedJSON = decodedKey.replace(/[\x00-\x1F]/g, '');
 
-            // Log first 50 chars of sanitized key for debugging
-            console.log(`[FIREBASE] Decoded snippet: ${sanitizedJSON.substring(0, 50)}...`);
+            console.log(`[FIREBASE] Decoded Start: ${sanitizedJSON.substring(0, 50)}...`);
+            console.log(`[FIREBASE] Decoded End: ...${sanitizedJSON.substring(sanitizedJSON.length - 50)}`);
 
-            serviceAccount = JSON.parse(sanitizedJSON);
-            console.log('[FIREBASE] JSON parse successful');
+            try {
+                serviceAccount = JSON.parse(sanitizedJSON);
+                console.log('[FIREBASE] JSON parse successful');
+            } catch (parseErr: any) {
+                // Pinpoint the error
+                const posStr = parseErr.message.match(/position (\d+)/);
+                if (posStr && posStr[1]) {
+                    const pos = parseInt(posStr[1], 10);
+                    const start = Math.max(0, pos - 20);
+                    const end = Math.min(sanitizedJSON.length, pos + 20);
+                    console.error(`[FIREBASE] JSON Error at pos ${pos}: "...${sanitizedJSON.substring(start, end)}..."`);
+                }
+                throw parseErr;
+            }
         } catch (err: any) {
             console.error(`[FIREBASE] Failed to decode/parse Base64: ${err.message}`);
         }
