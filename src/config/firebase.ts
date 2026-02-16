@@ -25,8 +25,11 @@ try {
 
         try {
             // ONLY remove whitespace (newlines, spaces) which are valid in Base64 formatting
-            const cleanBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64.replace(/\s/g, '');
-            console.log(`[FIREBASE] Base64 length: ${process.env.FIREBASE_SERVICE_ACCOUNT_BASE64.length} -> Cleaned length: ${cleanBase64.length}`);
+            const rawBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+            const cleanBase64 = rawBase64.replace(/\s/g, '');
+
+            console.log(`[FIREBASE] Raw B64 Start: ${rawBase64.substring(0, 10)}... End: ...${rawBase64.substring(rawBase64.length - 10)}`);
+            console.log(`[FIREBASE] Base64 length: ${rawBase64.length} -> Cleaned length: ${cleanBase64.length}`);
 
             const decodedKey = Buffer.from(cleanBase64, 'base64').toString('utf8');
             console.log(`[FIREBASE] Decoded JSON length: ${decodedKey.length}`);
@@ -35,21 +38,22 @@ try {
             console.log(`[FIREBASE] JSON Start: ${decodedKey.substring(0, 40)}...`);
             console.log(`[FIREBASE] JSON End: ...${decodedKey.substring(decodedKey.length - 40)}`);
 
-            serviceAccount = JSON.parse(decodedKey);
-            console.log('[FIREBASE] JSON parse successful');
-        } catch (err: any) {
-            console.error(`[FIREBASE] Failed to decode/parse Base64: ${err.message}`);
-            // If it fails, log a snippet around the error if it's a JSON error
-            if (err.message.includes('position')) {
-                const posMatch = err.message.match(/position (\d+)/);
+            try {
+                serviceAccount = JSON.parse(decodedKey);
+                console.log('[FIREBASE] JSON parse successful');
+            } catch (parseErr: any) {
+                // Pinpoint the error
+                const posMatch = parseErr.message.match(/position (\d+)/);
                 if (posMatch) {
                     const pos = parseInt(posMatch[1], 10);
-                    const decodedKey = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64!.replace(/\s/g, ''), 'base64').toString('utf8');
                     const start = Math.max(0, pos - 20);
                     const end = Math.min(decodedKey.length, pos + 20);
-                    console.error(`[FIREBASE] Error context: "...${decodedKey.substring(start, end)}..."`);
+                    console.error(`[FIREBASE] JSON Error at pos ${pos}: "...${decodedKey.substring(start, end)}..."`);
                 }
+                throw parseErr; // Re-throw to be caught by the outer try-catch for Base64 processing
             }
+        } catch (err: any) {
+            console.error(`[FIREBASE] Failed to decode/parse Base64: ${err.message}`);
         }
     } else if (fs.existsSync(serviceAccountPath)) {
         console.log('[FIREBASE] Found serviceAccountKey.json file');
